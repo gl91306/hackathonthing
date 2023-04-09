@@ -1,0 +1,20 @@
+{
+  "name": "webgame",
+  "version": "1.0.0",
+  "description": "coolio",
+  "main": "main.js",
+  "scripts": {
+    "start": "node main.js"
+  },
+  "keywords": [
+    "e"
+  ],
+  "author": "me",
+  "license": "ISC",
+  "dependencies": {
+    "follow-redirects": "^1.15.2",
+    "mime": "^3.0.0",
+    "uuid-token-generator": "^1.0.0",
+    "ws": "^8.13.0"
+  }
+}
