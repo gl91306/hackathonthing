@@ -109,7 +109,7 @@ if (!authKey || (authKey == '')) {
 
 // server
 var serverURL = 'ws://localhost:8080';
-var myId = uuidv4();
+var myId = authKey;
 console.log(myId);
 const currentServer = new WebSocket(serverURL);
 var otherPlayers = [];
@@ -301,8 +301,13 @@ async function main() {
           otherPlayerBodies[playere.id].quaternion.y = playere.quaternion.y;
           otherPlayerBodies[playere.id].quaternion.z = playere.quaternion.z;
 
-          otherPlayerMeshes[playere.id].position.copy(otherPlayerBodies[playere.id].position);
-          otherPlayerMeshes[playere.id].quaternion.copy(otherPlayerBodies[playere.id].quaternion);
+          otherPlayerMeshes[playere.id][0].position.copy(otherPlayerBodies[playere.id].position);
+          otherPlayerMeshes[playere.id][0].quaternion.copy(otherPlayerBodies[playere.id].quaternion);
+
+          otherPlayerMeshes[playere.id][1].position.x = otherPlayerMeshes[playere.id][0].position.x;
+          otherPlayerMeshes[playere.id][1].position.y = otherPlayerMeshes[playere.id][0].position.y + 1;
+          otherPlayerMeshes[playere.id][1].position.z = otherPlayerMeshes[playere.id][0].position.z;
+          otherPlayerMeshes[playere.id][1].lookAt(camera.position);
         } else {
           var finalBody = new CANNON.Body({
               mass: 3, // kg
@@ -325,8 +330,30 @@ async function main() {
           finalMesh.position.copy(finalBody.position);
           finalMesh.position.copy(finalBody.position)
           scene.add(finalMesh);
+          
+          var canvas = document.createElement('canvas');
+          var ctx = canvas.getContext("2d");
+          canvas.width = 200;
+          canvas.height = 100;
+          ctx.font="20px Georgia";
+          console.log(playere.user)
+          ctx.textAlign = 'center';
+          ctx.fillText(playere.user,10,50);
+          console.log(canvas.toDataURL());
 
-          otherPlayerMeshes[playere.id] = finalMesh;
+          var texture = new THREE.Texture(canvas);
+          texture.needsUpdate = true; //just to make sure it's all up to date.
+          var label = new THREE.Mesh(new THREE.PlaneGeometry(), new THREE.MeshLambertMaterial({emissiveMap:texture}));
+          label.position.x = finalMesh.position.x;
+          label.position.y = finalMesh.position.y + 1;
+          label.position.z = finalMesh.position.z;
+          label.lookAt(camera.position);
+          scene.add(label);
+
+          otherPlayerMeshes[playere.id] = [finalMesh, label];
+
+          
+
           console.log(otherPlayerMeshes)
 
         }
@@ -375,6 +402,9 @@ currentServer.onmessage = (event) => {
     if (otherPlayers.length == 0) {
       //console.log(":C no other players")
     }
+  } else if (event.data == "400") {
+    window.alert('INVALID TOKEN');
+    window.location.href = './login';
   } else {
     console.log('!!!')
     console.log(event.data)
