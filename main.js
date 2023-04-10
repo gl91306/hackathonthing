@@ -41,15 +41,40 @@ wss.on('connection', function connection(ws) {
   });
   ws.on('message', function message(data) {
     if (data.includes('Id: ')) {
-      var playerId = data.toString().split('Id: ')[1];
+      var loggedIn = false;
+      var user = 'undefined'
+      let rawdata = fs.readFileSync('auth.json');
+      let authDatabase = JSON.parse(rawdata);
+
+      console.log(data.toString().split('Id: ')[1])
+
+      for (var i in authDatabase) {
+        console.log(data.toString().split('Id: ')[1])
+        console.log(authDatabase[i].authtoken)
+        console.log(data.toString().split('Id: ')[1] == authDatabase[i].authtoken)
+        if (authDatabase[i].authtoken == data.toString().split('Id: ')[1]) {
+          
+          loggedIn = true;
+          user = authDatabase[i].user;
+        }
+      }
+
+      console.log(loggedIn)
+
+      if (!loggedIn) {
+        ws.send('400');
+        return ws.terminate();
+      }
+
       var playerData = {
-        id: playerId,
+        id: data.toString().split('Id: ')[1],
+        user: user,
         position: {x: 0, y: 0, z: 0},
         quaternion: {x: 0, y: 0, z: 0}
       }
       players.push(playerData)
       console.log('received: %s', data);
-      ws.ide = playerId;
+      ws.ide = user;
     } else if (JSON.parse(data)) {
       var jsonData = JSON.parse(data);
       var otherData = []
